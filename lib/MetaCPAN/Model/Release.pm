@@ -15,6 +15,7 @@ use MooseX::StrictConstructor;
 use Path::Class ();
 use Parse::PMFile;
 use Try::Tiny;
+use JSON ();
 
 with 'MetaCPAN::Role::Logger';
 
@@ -372,8 +373,11 @@ sub _load_meta_file {
     my $extract_dir = $self->extract;
 
     my @files;
-    for (qw{*/META.json */META.yml */META.yaml META.json META.yml META.yaml})
-    {
+    my @meta_files
+        = !$ENV{METACPAN_IS_PERL6}
+        ? qw{*/META.json */META.yml */META.yaml META.json META.yml META.yaml}
+        : qw{*/META6.json};
+    for (@meta_files) {
 
         # scalar context globbing (without exhausting results) produces
         # confusing results (which caused existsing */META.json files to
@@ -391,7 +395,22 @@ sub _load_meta_file {
         my $last;
         for my $file (@files) {
             try {
-                $last = CPAN::Meta->load_file($file);
+                if ( !$ENV{METACPAN_IS_PERL6} ) {
+                    $last = CPAN::Meta->load_file($file);
+                }
+                else {
+                    my $json = do {
+                        local $/ = undef;
+                        open( my $fh, '<', $file ) or die $!;
+                        <$fh>;
+                    };
+                    my $metadata = JSON::decode_json($json);
+                    for ( keys %{ $metadata->{provides} } ) {
+                        $metadata->{provides}->{$_}
+                            = { file => $metadata->{provides}->{$_}, };
+                    }
+                    $last = CPAN::Meta->new($metadata);
+                }
             }
             catch { $error = $_ };
             if ($last) {
