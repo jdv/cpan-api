@@ -83,18 +83,26 @@ sub pod_lines {
     my $length = 0;
     my $start  = 0;
     my $slop   = 0;
+    my $level  = 0;
 
     # Use c-style for loop to avoid copying all the strings.
     my $num_lines = scalar @lines;
     for ( my $i = 0; $i < $num_lines; ++$i ) {
         my $line = $lines[$i];
 
-        if ( $line =~ /\A=cut/ ) {
+        my $p6_end = 1 if $line =~ /\A=end/ && --$level == 0;
+        if ( $line =~ /\A=cut/ || $p6_end ) {
             $length++;
             $slop++;
             push( @return, [ $start - 1, $length ] )
                 if ( $start && $length );
             $start = $length = 0;
+        }
+        elsif ( $line =~ /\A=begin/ ) {
+            $level++;
+
+            # Re-use iterator as line number.
+            $start = $i + 1 if $level == 1;
         }
 
       # Match lines that actually look like valid pod: "=pod\n" or "=pod x\n".
