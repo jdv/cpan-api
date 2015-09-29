@@ -3,6 +3,8 @@ package MetaCPAN::Server::View::Pod;
 use strict;
 use warnings;
 
+use Capture::Tiny ();
+use File::Temp    ();
 use MetaCPAN::Pod::Renderer;
 use Moose;
 
@@ -48,6 +50,22 @@ sub process {
 
 sub build_pod_html {
     my ( $self, $source, $show_errors, $x_codes, $link_mappings ) = @_;
+
+    if ( $ENV{METACPAN_IS_PERL6} ) {
+        my $html = q{};
+        my ( $fh, $filename ) = File::Temp::tempfile();
+        print $fh $source;
+        close $fh or die $!;
+        my ( $stdout, $stderr, $exit ) = Capture::Tiny::capture {
+            system( 'perl6', '--doc=HTML', "$filename" );
+        };
+        $html = $stdout if $stdout && $exit >> 8 == 0;
+
+        # TODO: why is this needed?
+        $html = ' ' unless $html;
+
+        return $html;
+    }
 
     my $renderer = $self->_factory->html_renderer;
     $renderer->nix_X_codes( !$x_codes );
