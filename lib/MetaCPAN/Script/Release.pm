@@ -85,6 +85,13 @@ sub run {
                 qr/\.(tgz|tbz|tar[\._-]gz|tar\.bz2|tar\.Z|zip|7z)$/);
             $find = $find->mtime( ">" . ( time - $self->age * 3600 ) )
                 if ( $self->age );
+            $find = $find->exec(
+                sub {
+                    my $is_p6_path
+                        = $_[2] =~ qr|authors/id/\w+/\w+/\w+/Perl6/|;
+                    $ENV{METACPAN_IS_PERL6} ? $is_p6_path : !$is_p6_path;
+                }
+            );
             push(
                 @files,
                 map { $_->{file} } sort { $a->{mtime} <=> $b->{mtime} } map {
