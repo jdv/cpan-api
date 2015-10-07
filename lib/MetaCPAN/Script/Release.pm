@@ -8,6 +8,7 @@ BEGIN {
 }
 
 use CPAN::DistnameInfo ();
+use Capture::Tiny ();
 use File::Find::Rule;
 use File::stat ();
 use LWP::UserAgent;
@@ -181,7 +182,12 @@ sub run {
         else {
             try { $self->import_archive($file) }
             catch {
-                $self->handle_error( $_[0] );
+    		if ( $ENV{METACPAN_IS_PERL6} && /^Install of Perl6/ ) {
+		    warn "Skipping $file:  $_";
+		}
+		else {
+                    $self->handle_error( $_[0] );
+		}
             };
             exit if ( $self->children );
         }
@@ -211,6 +217,19 @@ sub import_archive {
         logger   => $self->logger,
         status   => $self->detect_status( $d->cpanid, $d->filename ),
     );
+
+    # Note:  Perl6 pod gen requires runtime...:(
+    if ( $ENV{METACPAN_IS_PERL6} ) {
+        log_debug {'Installing Perl6 dist'};
+	my $dist_dir
+          = $model->archive->extract->subdir($d->distvname)->stringify;
+        my ( $out, $exit ) = Capture::Tiny::capture_merged {
+            system( 'panda', 'install', $dist_dir );
+        };
+	if ( $exit >> 8 != 0 ) {
+	    die "Install of Perl6 dist failed:  $out";
+        }
+    }
 
     log_debug {'Gathering modules'};
 
