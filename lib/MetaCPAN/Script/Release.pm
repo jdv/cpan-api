@@ -327,6 +327,9 @@ sub detect_status {
 
 sub _build_perms {
     my $self = shift;
+
+    return {} if $ENV{METACPAN_IS_PERL6};
+
     my $file = $self->cpan->file(qw(modules 06perms.txt));
     my %authors;
     if ( -e $file ) {
