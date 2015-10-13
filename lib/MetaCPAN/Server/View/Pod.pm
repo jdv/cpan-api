@@ -60,6 +60,7 @@ sub build_pod_html {
             system( 'perl6', '--doc=HTML', "$filename" );
         };
         $html = $stdout if $stdout && $exit >> 8 == 0;
+        $html =~ s/\#___top/\#___pod/g;
 
         # TODO: why is this needed?
         $html = ' ' unless $html;
