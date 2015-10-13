@@ -63,28 +63,27 @@ for (@repos) {
     print "CLEAN:".`git clean -dfx`.":CLEAN";
     unless ( -e 'META6.json' ) {
         copy("META.info", "META6.json") or die "Copy failed: $!";
+    }
 
     	$meta = decode_json(read_file('META6.json'));
 
 	die "NO NAME" unless $meta->{name};
 	if ( $meta->{version} eq '*' || ! exists $meta->{version} ) {
-		$meta->{version} = 'v1.00';
+		$meta->{version} = 'v1.2.3.4.5';
 	}
-	elsif ( $meta->{version} =~ /(\d+(?:.\d+)?)/ ) {
+	elsif ( $meta->{version} =~ /(\d+(?:.\d+)*)/ ) {
 		$meta->{version} = 'v' . $1;
 	}
 	else {
 		die "version ($meta->{version}) unhandled";
 	}
-	write_file('META6.json', encode_json($meta));
+	write_file(
+        'META6.json',
+        JSON::XS->new->utf8->pretty(1)->canonical(1)->encode($meta)
+    );
 
 	print "ADD:".`git add META6.json`.":ADD";
 	print "COMMIT:".`git commit -m 'WIP - add META6.json'`.":COMMIT";
-    }
-    else {
-        $meta = decode_json(read_file('META6.json'));
-    }
-
 
     # TODO: determine pause id or default to JDV
     # TODO: lost some repos in the dists...
