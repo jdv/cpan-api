@@ -138,6 +138,7 @@ requires 'Regexp::Common::time';
 requires 'Safe', '2.35'; # bug fixes (used by Parse::PMFile)
 requires 'Starman';
 requires 'Time::Local';
+requires 'Time::Out';
 requires 'Throwable::Error';
 requires 'Try::Tiny';
 requires 'URI';
