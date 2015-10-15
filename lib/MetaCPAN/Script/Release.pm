@@ -18,6 +18,7 @@ use MetaCPAN::Model::Release;
 use MetaCPAN::Types qw( Dir );
 use Moose;
 use PerlIO::gzip;
+use Time::Out ();
 use Try::Tiny;
 
 with 'MetaCPAN::Role::Script', 'MooseX::Getopt';
@@ -223,12 +224,15 @@ sub import_archive {
         log_debug {'Installing Perl6 dist'};
 	my $dist_dir
           = $model->archive->extract->subdir($d->distvname)->stringify;
-        my ( $out, $exit ) = Capture::Tiny::capture_merged {
-            system( 'panda', 'install', $dist_dir );
+        Time::Out::timeout 60 => sub {
+            my ( $out, $exit ) = Capture::Tiny::capture_merged {
+                system( 'panda', 'install', $dist_dir );
+            };
+            if ( $exit >> 8 != 0 ) {
+                die "Install of Perl6 dist failed:  $out";
+            }
         };
-	if ( $exit >> 8 != 0 ) {
-	    die "Install of Perl6 dist failed:  $out";
-        }
+        die "Install of Perl6 dist ($dist_dir) timed out." if $@;
     }
 
     log_debug {'Gathering modules'};
