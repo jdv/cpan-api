@@ -54,6 +54,7 @@ sub path {
     return if -e $source_dir;  # previously extracted, but file does not exist
 
     my $author = MetaCPAN::Util::author_dir($pauseid);
+    $author .= '/Perl6' if $ENV{METACPAN_IS_PERL6};
     my $http = dir( qw(var tmp http authors), $author );
     $author = $self->cpan . "/authors/$author";
 
