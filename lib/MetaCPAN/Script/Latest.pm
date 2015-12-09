@@ -3,6 +3,7 @@ package MetaCPAN::Script::Latest;
 use strict;
 use warnings;
 
+use CPAN6::Packages;
 use Log::Contextual qw( :log );
 use Moose;
 use MooseX::Aliases;
@@ -30,8 +31,15 @@ has packages => (
 );
 
 sub _build_packages {
-    return Parse::CPAN::Packages::Fast->new(
-        shift->cpan->file(qw(modules 02packages.details.txt.gz))->stringify );
+    if ( ! $ENV{METACPAN_IS_PERL6} ) {
+        return Parse::CPAN::Packages::Fast->new(
+            shift->cpan->file(qw(modules 02packages.details.txt.gz))->stringify
+        );
+    }
+    else {
+        return CPAN6::Packages->new(
+          shift->cpan->subdir('authors')->stringify );
+    }
 }
 
 sub run {
