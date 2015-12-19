@@ -10,7 +10,7 @@ use File::Path;
 $|++;
 
 my $repo_dir = '/home/jdv/eco_repos';
-my $dist_dir = '/home/jdv/cp6an_dists/authors/id';
+my $dist_dir = '/home/jdv/cpan6_dists/authors/id';
 
 sub get_eco_repo_list {
     my $resp
@@ -19,6 +19,7 @@ sub get_eco_repo_list {
         return map {
             #TODO: this may need help for META6.json
             my $uri = $_->{'source-url'} || $_->{'support'}->{'source'};
+	    $uri =~ s/\/$/.git/ if $uri =~ /^https/;
             $uri ? $uri : die "URI:" . Dumper($_);
         } grep {
             $_->{'name'} !~ /^(Tardis)$/;
@@ -35,6 +36,7 @@ for (@repos) {
     chdir $repo_dir or die;
     my ($base) = $_ =~ /([^\/]+)\.git$/;
     print "REPO:($_,$base)\n";
+
 
     if ( -e $base ) {
     	chdir $base or die;
@@ -61,6 +63,7 @@ for (@repos) {
 
     my $meta;
     print "CLEAN:".`git clean -dfx`.":CLEAN";
+    unlink 'META6.json' if -l 'META6.json';
     unless ( -e 'META6.json' ) {
         copy("META.info", "META6.json") or die "Copy failed: $!";
     }
@@ -95,7 +98,7 @@ for (@repos) {
     unless ( 0){#-e $tar_file ) {
         #chdir '..' or die;
 	my $cmd = 'git archive --format=tar --prefix='
-          . "$tar_base/ HEAD | gzip > $tar_file |";
+          . "\"$tar_base/\" HEAD | gzip > \"$tar_file\" |";
        open(my $archive, $cmd) or die;
        while (<$archive>) { print; }
        close $archive or die;
