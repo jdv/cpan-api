@@ -87,6 +87,7 @@ sub run {
                 qr/\.(tgz|tbz|tar[\._-]gz|tar\.bz2|tar\.Z|zip|7z)$/);
             $find = $find->mtime( ">" . ( time - $self->age * 3600 ) )
                 if ( $self->age );
+            #TODO: make sure this ignores p6 dists for metacpan5.
             $find = $find->exec(
                 sub {
                     my $is_p6_path
@@ -133,11 +134,6 @@ sub run {
             log_error {"Dunno what $_ is"};
         }
     }
-
-    # Strip off any files in a Perl6 folder
-    # e.g. http://www.cpan.org/authors/id/J/JD/JDV/Perl6/
-    # As here we are indexing perl5 only
-    @files = grep { $_ !~ m{/Perl6/} } @files;
 
     log_info { scalar @files, " archives found" } if ( @files > 1 );
 
