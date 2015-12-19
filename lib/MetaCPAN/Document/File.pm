@@ -720,6 +720,7 @@ sub is_in_other_files {
         MANIFEST
         META.json
         META.yml
+        META6.json
         NEWS
         README
         README.md
