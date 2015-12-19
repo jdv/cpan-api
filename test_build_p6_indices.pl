@@ -15,9 +15,13 @@ for ( glob( $authors_dir . '*/*/*/Perl6/*gz' ) ) {
     next if /-Elo-|CheckSocket-|Data-Selector-1.00|File-Temp|JSON-Faster|Linenoise/;
 
     my $dist_name = $_ =~ s/$authors_dir//r;
-    my $meta = decode_json(
-        `tar --to-stdout -xzvf $_ */META6.json 2> /dev/null`
-    );
+    my $meta = eval {decode_json(
+        `tar --to-stdout --wildcards -xzvf "$_" '*/META6.json' 2> /dev/null`
+    )};
+    if ( my $e = $@ ) {
+        warn "meta decode failure($_):  $e";
+        next;
+    }
     $data->{p6dists}->{$dist_name} = {
         name => $meta->{name},
         auth => (split( /\//, $dist_name ))[2],
