@@ -352,7 +352,7 @@ sub _build_pod {
 
     if ( $ENV{METACPAN_IS_PERL6} ) {
         my $pod = q{};
-        my ( $fh, $filename ) = File::Temp::tempfile();
+        my ( $fh, $filename ) = File::Temp::tempfile(UNLINK => 1);
         print $fh ${ $self->content };
         close $fh or die $!;
         my ( $stdout, $stderr, $exit ) = Capture::Tiny::capture {

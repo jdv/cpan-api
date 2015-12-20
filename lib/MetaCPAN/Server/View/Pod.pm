@@ -53,7 +53,7 @@ sub build_pod_html {
 
     if ( $ENV{METACPAN_IS_PERL6} ) {
         my $html = q{};
-        my ( $fh, $filename ) = File::Temp::tempfile();
+        my ( $fh, $filename ) = File::Temp::tempfile(UNLINK => 1);
         print $fh $source;
         close $fh or die $!;
         my ( $stdout, $stderr, $exit ) = Capture::Tiny::capture {
