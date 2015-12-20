@@ -59,7 +59,8 @@ sub build_pod_html {
         my ( $stdout, $stderr, $exit ) = Capture::Tiny::capture {
             system( 'perl6', '--doc=HTML', "$filename" );
         };
-        die "perl6 pod gen error:  $stderr" if $stderr || $exit >> 8 != 0;
+        die "pod6 to html error:  $stderr"
+          if $stderr || $exit >> 8 != 0;
         $html = $stdout if $stdout && $exit >> 8 == 0;
         $html =~ s/\#___top/\#___pod/g;
 

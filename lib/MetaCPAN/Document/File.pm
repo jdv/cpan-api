@@ -350,6 +350,21 @@ sub _build_pod {
     my $self = shift;
     return \'' unless ( $self->is_perl_file );
 
+    if ( $ENV{METACPAN_IS_PERL6} ) {
+        my $pod = q{};
+        my ( $fh, $filename ) = File::Temp::tempfile();
+        print $fh ${ $self->content };
+        close $fh or die $!;
+        my ( $stdout, $stderr, $exit ) = Capture::Tiny::capture {
+            system( 'perl6', '--doc', "$filename" );
+        };
+        warn "pod6 to text error:  $stderr"
+          if $stderr || $exit >> 8 != 0;
+        $pod = $stdout if $stdout && $exit >> 8 == 0;
+
+        return \$pod;
+    }
+
     my $parser = Pod::Text->new( sentence => 0, width => 78 );
 
     # We don't need to index pod errors.
@@ -654,6 +669,8 @@ sub is_perl_file {
     my $self = shift;
     return 0 if ( $self->directory );
     return 1 if ( $self->name =~ /\.(pl|pm|pod|t)$/i );
+    return 1 if $ENV{METACPAN_IS_PERL6}
+      && ( $self->name =~ /\.(pl|pm|pod|t)6?$/i );
     return 1 if ( $self->mime eq "text/x-script.perl" );
     return 1
         if ( $self->name !~ /\./

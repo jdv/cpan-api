@@ -218,11 +218,11 @@ sub import_archive {
     # Note:  Perl6 pod gen requires runtime...:(
     if ( $ENV{METACPAN_IS_PERL6} ) {
         log_debug {'Installing Perl6 dist'};
-	my $dist_dir
+        my $dist_dir
           = $model->archive->extract->subdir($d->distvname)->stringify;
-        Time::Out::timeout 60 => sub {
+        Time::Out::timeout 300 => sub {
             my ( $out, $exit ) = Capture::Tiny::capture_merged {
-                system( 'panda', 'install', $dist_dir );
+                system( 'panda', '--force', 'install', $dist_dir );
             };
             if ( $exit >> 8 != 0 ) {
                 die "Install of Perl6 dist failed:  $out";

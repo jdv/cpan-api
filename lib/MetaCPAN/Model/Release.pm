@@ -470,6 +470,12 @@ sub _modules_from_meta {
                 indexed => 1,
             }
         );
+
+        if ( $ENV{METACPAN_IS_PERL6} ) {
+            $file->clear_documentation;
+            $file->documentation;
+        }
+
         push( @modules, $file );
     }
 
