@@ -40,7 +40,7 @@ sub process {
     }
     else {
         $body = $self->build_pod_html( $content, $show_errors, $x_codes,
-            $link_mappings );
+            $link_mappings, $c );
         $content_type = 'text/html';
     }
 
@@ -49,23 +49,32 @@ sub process {
 }
 
 sub build_pod_html {
-    my ( $self, $source, $show_errors, $x_codes, $link_mappings ) = @_;
+    my ( $self, $source, $show_errors, $x_codes, $link_mappings, $c ) = @_;
 
     if ( $ENV{METACPAN_IS_PERL6} ) {
+        my $path = Path::Class::File->new(
+            do { my @d = $c->stash->{path}->dir->dir_list;
+              $d[2] = 'html_doc'; @d; },
+            $c->stash->{path}->basename,
+        );
+        $path->dir->mkpath unless $path->dir->stat;
         my $html = q{};
-        my ( $fh, $filename ) = File::Temp::tempfile(UNLINK => 1);
-        print $fh $source;
-        close $fh or die $!;
-        my ( $stdout, $stderr, $exit ) = Capture::Tiny::capture {
-            system( 'perl6', '--doc=HTML', "$filename" );
-        };
-        die "pod6 to html error:  $stderr"
-          if $stderr || $exit >> 8 != 0;
-        $html = $stdout if $stdout && $exit >> 8 == 0;
-        $html =~ s/\#___top/\#___pod/g;
+        unless ( $path->stat && ( $html = $path->slurp ) ) {
+            my ( $fh, $filename ) = File::Temp::tempfile(UNLINK => 1);
+            print $fh $source;
+            close $fh or die $!;
+            my ( $stdout, $stderr, $exit ) = Capture::Tiny::capture {
+                system( 'perl6', '--doc=HTML', "$filename" );
+            };
+            die "pod6 to html error:  $stderr"
+            if $stderr || $exit >> 8 != 0;
+            $html = $stdout if $stdout && $exit >> 8 == 0;
+            $html =~ s/\#___top/\#___pod/g;
 
-        # TODO: why is this needed?
-        $html = ' ' unless $html;
+            # TODO: why is this needed?
+            $html = ' ' unless $html;
+            $path->spew($html);
+        }
 
         return $html;
     }
