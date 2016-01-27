@@ -236,7 +236,7 @@ sub _build_version_numified {
 sub _build_download_url {
     my $self = shift;
     return
-          '/authors/'
+          'http://hack.p6c.org:5001/authors/'
         . MetaCPAN::Document::Author::_build_dir( $self->author ) . '/'
         . $self->archive;
 }
