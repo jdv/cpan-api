@@ -19,10 +19,10 @@ sub get_eco_repo_list {
         return map {
             #TODO: this may need help for META6.json
             my $uri = $_->{'source-url'} || $_->{'support'}->{'source'};
-	    $uri =~ s/\/$/.git/ if $uri =~ /^https/;
+	    $uri =~ s/\/?$/.git/ if $uri =~ /^https/ && $uri !~ /\.git$/;
             $uri ? $uri : die "URI:" . Dumper($_);
         } grep {
-            $_->{'name'} !~ /^(Tardis)$/;
+            $_->{'name'} !~ /^(Tardis|App::GPTrixie|Build::Graph|Build::Simple)$/;
         } @{ decode_json($resp->decoded_content) };
     }
     else { die $resp->status_line; }
@@ -72,7 +72,7 @@ for (@repos) {
 
 	die "NO NAME" unless $meta->{name};
 	if ( $meta->{version} eq '*' || ! exists $meta->{version} ) {
-		$meta->{version} = 'v1.2.3.4.5';
+		$meta->{version} = 'v1.2.3.4.6';
 	}
 	elsif ( $meta->{version} =~ /(\d+(?:.\d+)*)/ ) {
 		$meta->{version} = 'v' . $1;
