@@ -405,6 +405,11 @@ sub _load_meta_file {
                         <$fh>;
                     };
                     my $metadata = JSON::decode_json($json);
+
+		    # TODO:  This is a hack to keep CPAN::Meta from
+	            # erroring on account of finding a list instead of a map.
+		    delete $metadata->{resources};
+
                     for ( keys %{ $metadata->{provides} } ) {
                         $metadata->{provides}->{$_}
                             = { file => $metadata->{provides}->{$_}, };
