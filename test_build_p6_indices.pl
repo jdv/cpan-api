@@ -14,6 +14,9 @@ my $data = {
 for ( glob( $authors_dir . '*/*/*/Perl6/*gz' ) ) {
     next if /-Elo-|CheckSocket-|Data-Selector-1.00|File-Temp|JSON-Faster|Linenoise/;
 
+    # Approximation of PAUSE::dist::isa_dev_version().
+    next if /\d\.\d+_\d/ || /-TRIAL[0-9]*.*gz$/;
+
     my $dist_name = $_ =~ s/$authors_dir//r;
     my $meta = eval {decode_json(
         `tar --to-stdout --wildcards -xzvf "$_" '*/META6.json' 2> /dev/null`
