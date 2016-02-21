@@ -220,15 +220,18 @@ sub import_archive {
         log_debug {'Installing Perl6 dist'};
         my $dist_dir
           = $model->archive->extract->subdir($d->distvname)->stringify;
-        Time::Out::timeout 300 => sub {
+        my $before = time;
+        Time::Out::timeout 3600 => sub {
             my ( $out, $exit ) = Capture::Tiny::capture_merged {
-                system( 'panda', '--force', 'install', $dist_dir );
+                system( 'panda', '--notests', '--force', 'install', $dist_dir );
             };
             if ( $exit >> 8 != 0 ) {
                 die "Install of Perl6 dist failed:  $out";
             }
         };
         die "Install of Perl6 dist ($dist_dir) timed out." if $@;
+        log_debug { "Install of Perl6 dist ($dist_dir) took "
+          . ( time - $before ) . "s\n" };
     }
 
     log_debug {'Gathering modules'};
