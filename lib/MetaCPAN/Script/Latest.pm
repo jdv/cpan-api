@@ -126,8 +126,10 @@ sub run {
         # For each of the packages in this file...
         foreach my $module (@modules) {
 
-           # Get P:C:P:F:Distribution (CPAN::DistnameInfo) object for package.
-            my $dist = $module->distribution;
+            # Get P:C:P:F:Distribution (CPAN::DistnameInfo) object for package.
+            my $dist = ! $ENV{METACPAN_IS_PERL6}
+              ? $module->distribution
+              : $p->latest_distribution($module->distribution->dist);
 
             # If 02packages has the same author/release for this package...
 
