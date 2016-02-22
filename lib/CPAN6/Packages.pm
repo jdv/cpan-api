@@ -26,7 +26,7 @@ sub new {
             my $dist_info = $obj->{_p6dists}->{$dist_path};
             $obj->{pkg_ver}->{$pkg_name} = $dist_info->{ver} =~ s/^v//r;
             $obj->{pkg_to_dist}->{$pkg_name} = $dist_path;
-            push( @{ $obj->{dist_to_pkgs} }, $pkg_name );
+            push( @{ $obj->{dist_to_pkgs}->{$dist_path} }, $pkg_name );
         }
     }
 
