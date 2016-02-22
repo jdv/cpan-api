@@ -358,7 +358,7 @@ sub _build_pod {
         my ( $stdout, $stderr, $exit ) = Capture::Tiny::capture {
             system( 'perl6', '--doc', "$filename" );
         };
-        warn "pod6 to text error:  $stderr"
+        warn "pod6 to text error (" . $self->full_path . "):  $stderr\n"
           if $stderr || $exit >> 8 != 0;
         $pod = $stdout if $stdout && $exit >> 8 == 0;
 
