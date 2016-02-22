@@ -410,6 +410,9 @@ sub _load_meta_file {
 	            # erroring on account of finding a list instead of a map.
 		    delete $metadata->{resources};
 
+		    #TODO because validation fails on Text::CSV
+		    delete $metadata->{license};
+
                     for ( keys %{ $metadata->{provides} } ) {
                         $metadata->{provides}->{$_}
                             = { file => $metadata->{provides}->{$_}, };
